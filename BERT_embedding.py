@@ -30,22 +30,36 @@ def tokenize_words_tags(words: list, tags: list):
     tags_list = []
     for word, tag in zip(words, tags):
         tokenize_word = tokenizer.tokenize(word)
-        number_of_subwords = len(tokenize_word)
+        number_of_sub_word = len(tokenize_word)
         tokenized_list.extend(tokenize_word)
-        tags_list.extend(tag * number_of_subwords)
+        tags_list.extend([tag for i in range(number_of_sub_word)])
     return tokenized_list, tags_list
 
 
 tokenized_text_and_tag = [tokenize_words_tags(sentence, tags) for sentence, tags in
                           zip(train_dict['word_seq'], train_dict['tag_seq'])]
-print(tokenized_text_and_tag[0])
-print("words and tags tokenized and paired")
+
+print("max length of the tokenized text is {}".format(
+    max([len(tokenized_pair[0]) for tokenized_pair in tokenized_text_and_tag])))
 
 tokenized_text = [tokenized_pair[0] for tokenized_pair in tokenized_text_and_tag]
 tokenized_tag = [tokenized_pair[1] for tokenized_pair in tokenized_text_and_tag]
 
+print(max([len(tokenized_pair[0]) for tokenized_pair in tokenized_text_and_tag]))
+
+
+############# TO BE DONE ######################
+def cut_over_sized_token_list():
+    pass
+
+
+############# TO BE DONE ######################
+
+print("words and tags tokenized are prepared")
+
 text_id_list_padded = pad_sequences(
-    [tokenizer.convert_tokens_to_ids(tokenized_sentence) for tokenized_sentence in tokenized_text], maxlen=135,
+    [tokenizer.convert_tokens_to_ids(tokenized_sentence) for tokenized_sentence in tokenized_text], maxlen=512,
     dtype="long", value=0.0, truncating="post", padding="post")
-tags_id_list_padded = pad_sequences([[tag_to_index_dict[tag] for tag in tags] for tags in tokenized_tag], maxlen=135,
-                                    dtype="long", value=tag_to_index_dict["PAD"], truncating="post", padding="post")
+tags_id_list_padded = pad_sequences([[tag_to_index_dict[tag] for tag in tags] for tags in tokenized_tag], maxlen=512,
+                                    dtype="int", value=tag_to_index_dict["PAD"], truncating="post", padding="post")
+print(text_id_list_padded[0])
