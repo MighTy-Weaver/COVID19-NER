@@ -252,7 +252,7 @@ for _ in trange(epochs, desc="Epoch: "):
 # Save our trained model
 if not os.path.exists("./models/"):
     os.mkdir("./models/")
-torch.save(model, "./models/model.pkl")
+torch.save(model, "./models/model_e{}_bs{}.pkl".format(epochs, BS))
 
 # Do some visualization, set the style and the font size, figure size
 sns.set_style(style="darkgrid")
