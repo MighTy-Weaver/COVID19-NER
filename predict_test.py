@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import pickle
@@ -9,9 +10,14 @@ from pandas import DataFrame
 from tqdm import trange
 from transformers import BertTokenizer
 
-# Load the test dataset and construct the Dataframe
 from BERT_finetuning import train_dict
 
+# Build an arg_parser to retrieve the model path
+parser = argparse.ArgumentParser()
+parser.add_argument("--model_path", required=True, type=str, help="The PATH of the model")
+args = parser.parse_args()
+
+# Load the test dataset and construct the Dataframe
 test_data = pickle.load(open("./data/test.pkl", 'rb'))
 answer = DataFrame(columns=['id', 'labels'])
 answer['id'] = test_data['id']
@@ -24,7 +30,7 @@ index_to_tag_dict = {i: t for i, t in enumerate(tag_list)}
 
 # Set up the same tokenizer and load the model, push the model to GPU and eval mode
 tokenizer = BertTokenizer.from_pretrained('bert-base-cased', do_lower_case=False)
-model = torch.load("./models/model_e5_bs2_epoch4.pkl")
+model = torch.load(args.model_path)
 model.eval()
 model.cuda()
 

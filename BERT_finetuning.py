@@ -15,6 +15,7 @@ from torch.utils.data import TensorDataset, RandomSampler, SequentialSampler, Da
 from tqdm import tqdm, trange
 from transformers import BertForTokenClassification, AdamW, get_linear_schedule_with_warmup
 
+# Build and arg_parser to retrieve arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--epoch", type=int, required=False, default=10,
                     help="The number of epochs to be train for the model")
@@ -23,6 +24,7 @@ parser.add_argument("--batch_size", type=int, required=False, default=2, help="T
 args = parser.parse_args()
 BS = args.batch_size
 
+# Get the GPU as torch device
 if torch.cuda.is_available():
     device = torch.device("cuda")
 else:
