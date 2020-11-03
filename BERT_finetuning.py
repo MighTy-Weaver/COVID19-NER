@@ -8,7 +8,7 @@ import numpy as np
 import seaborn as sns
 import torch
 from pytorch_pretrained_bert import BertTokenizer
-from sklearn.metrics import accuracy_score, f1_score
+from seqeval.metrics import accuracy_score
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import TensorDataset, RandomSampler, SequentialSampler, DataLoader
@@ -185,7 +185,7 @@ print("Start Training.......")
 # Store the loss and with two list for each training and validation
 training_loss_values, validation_loss_values = [], []
 
-for _ in trange(epochs, desc="Epoch: "):
+for ep in trange(epochs, desc="Epoch: {}"):
     model.train()
     total_loss = 0
     for step, batch in enumerate(tqdm(train_loader)):
@@ -210,7 +210,7 @@ for _ in trange(epochs, desc="Epoch: "):
 
     # Calculate the average loss and add it to the loss list
     average_training_loss = total_loss / len(train_loader)
-    print("The average training loss is {}".format(average_training_loss))
+    print("The average training loss is {}\n".format(average_training_loss))
     training_loss_values.append(average_training_loss)
 
     # We have finished the training on one epoch, validation period
@@ -240,19 +240,26 @@ for _ in trange(epochs, desc="Epoch: "):
     # Calculate the average loss
     average_validation_loss = val_loss / len(val_loader)
     validation_loss_values.append(average_validation_loss)
-    print("Average Validation Loss is: {}".format(average_validation_loss))
+    print("Average Validation Loss is: {}\n".format(average_validation_loss))
 
     pred_tags = [index_to_tag_dict[predicted_index] for predicted, origin in zip(predict_tag, original_tag) for
                  predicted_index, origin_index in zip(predicted, origin) if index_to_tag_dict[origin_index] != "PAD"]
     non_pad_tags = [index_to_tag_dict[origin_index] for origin in original_tag for origin_index in origin if
                     index_to_tag_dict[origin_index] != "PAD"]
-    print("Validation Accuracy: {}".format(accuracy_score(pred_tags, non_pad_tags)))
-    print("Validation F1-Score: {}\n".format(f1_score(pred_tags, non_pad_tags)))
+    print("Validation Accuracy: {}\n".format(accuracy_score(pred_tags, non_pad_tags)))
 
-# Save our trained model
-if not os.path.exists("./models/"):
-    os.mkdir("./models/")
-torch.save(model, "./models/model_e{}_bs{}.pkl".format(epochs, BS))
+    # Save our trained model
+    if not os.path.exists("./models/"):
+        os.mkdir("./models/")
+    torch.save(model, "./models/model_e{}_bs{}_epoch{}.pkl".format(epochs, BS, ep))
+
+# Save the loss array as npy
+if not os.path.exists("./loss/"):
+    os.mkdir("./loss/")
+training_loss = np.array(training_loss_values)
+validation_loss = np.array(validation_loss_values)
+np.save('./loss/training_loss.npy', training_loss)
+np.save('./loss/validation_loss.npy', validation_loss)
 
 # Do some visualization, set the style and the font size, figure size
 sns.set_style(style="darkgrid")
@@ -268,4 +275,5 @@ plt.title("Learning Curve")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
-plt.show()
+plt.savefig('./loss/loss_fig.png')
+# plt.show()
