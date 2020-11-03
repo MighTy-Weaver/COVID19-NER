@@ -4,6 +4,7 @@ from itertools import chain
 import torch
 from pytorch_pretrained_bert import BertTokenizer
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+from torch.utils.data import TensorDataset, RandomSampler, SequentialSampler, DataLoader
 from tqdm import tqdm
 
 if torch.cuda.is_available():
@@ -37,7 +38,7 @@ def tokenize_words_tags(words: list, tags: list):
         tokenize_word = tokenizer.tokenize(word)
         number_of_sub_word = len(tokenize_word)
         tokenized_list.extend(tokenize_word)
-        tags_list.extend([tag for i in range(number_of_sub_word)])
+        tags_list.extend([tag for _ in range(number_of_sub_word)])
     return tokenized_list, tags_list
 
 
@@ -128,3 +129,12 @@ train_mask = torch.tensor(train_attention_mask)
 val_input = torch.tensor(val_text_id_list_padded)
 val_tag = torch.tensor(val_tags_id_list_padded)
 val_mask = torch.tensor(val_attention_mask)
+print("\nTensors Created\n")
+
+# Make data loaders and make batch
+train_dataset = TensorDataset(train_input, train_mask, train_tag)
+val_dataset = TensorDataset(val_input, val_mask, val_tag)
+train_sample = RandomSampler(train_dataset)
+val_sample = SequentialSampler(val_dataset)
+train_loader = DataLoader(train_dataset, sampler=train_sample, batch_size=32)
+val_loader = DataLoader(val_dataset, sampler=val_sample, batch_size=32)
