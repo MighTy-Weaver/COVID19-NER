@@ -4,6 +4,7 @@ import pickle
 from itertools import chain
 
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 import torch
 from pytorch_pretrained_bert import BertTokenizer
@@ -18,7 +19,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--epoch", type=int, required=False, default=10,
                     help="The number of epochs to be train for the model")
 parser.add_argument("--gradnorm", type=float, required=False, default=1.0, help="maximum gradient normalization")
+parser.add_argument("--batch_size", type=int, required=False, default=2, help="The batch size during the training")
 args = parser.parse_args()
+BS = args.batch_size
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
@@ -149,8 +152,8 @@ train_dataset = TensorDataset(train_input, train_mask, train_tag)
 val_dataset = TensorDataset(val_input, val_mask, val_tag)
 train_sample = RandomSampler(train_dataset)
 val_sample = SequentialSampler(val_dataset)
-train_loader = DataLoader(train_dataset, sampler=train_sample, batch_size=32)
-val_loader = DataLoader(val_dataset, sampler=val_sample, batch_size=32)
+train_loader = DataLoader(train_dataset, sampler=train_sample, batch_size=BS)
+val_loader = DataLoader(val_dataset, sampler=val_sample, batch_size=BS)
 
 # Define our model
 model = BertForTokenClassification.from_pretrained("bert-base-cased", num_labels=len(tag_to_index_dict),
