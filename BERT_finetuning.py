@@ -246,23 +246,23 @@ for _ in trange(epochs, desc="Epoch: "):
     print("Validation Accuracy: {}".format(accuracy_score(pred_tags, non_pad_tags)))
     print("Validation F1-Score: {}\n".format(f1_score(pred_tags, non_pad_tags)))
 
-    # Save our trained model
-    if not os.path.exists("./models/"):
-        os.mkdir("./models/")
-    torch.save(model, "./models/model.pkl")
+# Save our trained model
+if not os.path.exists("./models/"):
+    os.mkdir("./models/")
+torch.save(model, "./models/model.pkl")
 
-    # Do some visualization, set the style and the font size, figure size
-    sns.set_style(style="darkgrid")
-    sns.set(font_scale=1.5)
-    plt.rcParams["figure.figsize"] = (30, 15)
+# Do some visualization, set the style and the font size, figure size
+sns.set_style(style="darkgrid")
+sns.set(font_scale=1.5)
+plt.rcParams["figure.figsize"] = (30, 15)
 
-    # Plot the learning curve
-    plt.plot(training_loss_values, 'b-o', label="Training Loss Curve")
-    plt.plot(validation_loss_values, 'r-o', label="Validation Loss Curve")
+# Plot the learning curve
+plt.plot(training_loss_values, 'b-o', label="Training Loss Curve")
+plt.plot(validation_loss_values, 'r-o', label="Validation Loss Curve")
 
-    # Label the plot
-    plt.title("Learning Curve")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.show()
+# Label the plot
+plt.title("Learning Curve")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.legend()
+plt.show()
