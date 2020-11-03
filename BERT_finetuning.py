@@ -188,7 +188,7 @@ training_loss_values, validation_loss_values = [], []
 for _ in trange(epochs, desc="Epoch: "):
     model.train()
     total_loss = 0
-    for step, batch in enumerate(train_loader):
+    for step, batch in enumerate(tqdm(train_loader)):
         batch_data = tuple(t.to(device) for t in batch)
         b_text, b_mask, b_tag = batch_data
         # Clear the gradient at the start of backward pass
@@ -228,7 +228,7 @@ for _ in trange(epochs, desc="Epoch: "):
             # Forward pass and return the predicted tags
             outputs = model(b_text, token_type_ids=None, attention_mask=b_mask, labels=b_tag)
 
-        # Move the predicted and readl tags to CPU
+        # Move the predicted and real tags to CPU
         predict_outcome = outputs[1].detach().cpu().numpy()
         real = b_tag.to('cpu').numpy()
 
