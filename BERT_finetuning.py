@@ -21,7 +21,7 @@ parser.add_argument("--gradnorm", type=float, required=False, default=1.0, help=
 args = parser.parse_args()
 
 if torch.cuda.is_available():
-    device = torch.cuda.device("cuda")
+    device = torch.device("cuda")
 else:
     device = torch.device("cpu")
 print(torch.cuda.device_count())
