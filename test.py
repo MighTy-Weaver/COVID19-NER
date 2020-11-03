@@ -6,3 +6,7 @@ print(json.loads(df.loc[1,'word_seq'])[0])
 
 data=pickle.load(open('./data/train.pkl','rb'))
 print(max([len(data['word_seq'][i]) for i in range(len(data))]))
+
+a=[[1],[2],[3]]
+a.append([4])
+print(a)
