@@ -1,11 +1,24 @@
+import argparse
+import os
 import pickle
 from itertools import chain
 
+import matplotlib.pyplot as plt
+import seaborn as sns
 import torch
 from pytorch_pretrained_bert import BertTokenizer
+from sklearn.metrics import accuracy_score, f1_score
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import TensorDataset, RandomSampler, SequentialSampler, DataLoader
-from tqdm import tqdm
+from tqdm import tqdm, trange
+from transformers import BertForTokenClassification, AdamW, get_linear_schedule_with_warmup
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--epoch", type=int, required=False, default=10,
+                    help="The number of epochs to be train for the model")
+parser.add_argument("--gradnorm", type=float, required=False, default=1.0, help="maximum gradient normalization")
+args = parser.parse_args()
 
 if torch.cuda.is_available():
     device = torch.cuda.device("cuda")
@@ -138,3 +151,118 @@ train_sample = RandomSampler(train_dataset)
 val_sample = SequentialSampler(val_dataset)
 train_loader = DataLoader(train_dataset, sampler=train_sample, batch_size=32)
 val_loader = DataLoader(val_dataset, sampler=val_sample, batch_size=32)
+
+# Define our model
+model = BertForTokenClassification.from_pretrained("bert-base-cased", num_labels=len(tag_to_index_dict),
+                                                   output_attentions=False, output_hidden_states=False)
+
+# push the model to GPU
+model.cuda()
+
+# Setup our parameter training optimizer and pass the parameters
+param_optimizer = list(model.named_parameters())
+no_decay = ['bias', 'gamma', 'beta']
+optimizer_grouped_parameters = [
+    {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay_rate': 0.01},
+    {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay_rate': 0.0}]
+optimizer = AdamW(optimizer_grouped_parameters, lr=2e-5, eps=1e-8)
+
+# Set the training epochs and grad_norm, calculate the total steps of training
+epochs = args.epoch
+max_grad_norm = args.gradnorm
+total_steps = len(train_loader) * epochs
+
+# Create the learning rate scheduler, training steps is total step
+scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
+
+# ################## We are ready to start the fine tuning     ###################
+# ################## The training and validation starts here   ###################
+
+print("Start Training.......")
+# Store the loss and with two list for each training and validation
+training_loss_values, validation_loss_values = [], []
+
+for _ in trange(epochs, desc="Epoch: "):
+    model.train()
+    total_loss = 0
+    for step, batch in enumerate(train_loader):
+        batch_data = tuple(t.to(device) for t in batch)
+        b_text, b_mask, b_tag = batch_data
+        # Clear the gradient at the start of backward pass
+        model.zero_grad()
+        # Forward pass and loss calculation
+        layer_output = model(b_text, token_type_ids=None, attention_mask=b_mask, labels=b_tag)
+        # get the loss
+        loss = layer_output[0]
+        # backward pass
+        loss.backward()
+        # add the one epoch loss to total loss
+        total_loss += loss.item()
+        # clip grad norm, shrink the gradient to avoid exploding gradient
+        clip_grad_norm_(parameters=model.parameters(), max_norm=max_grad_norm)
+        # Update the weights and regularization (Parameters update)
+        optimizer.step()
+        # Update the learning rate
+        scheduler.step()
+
+    # Calculate the average loss and add it to the loss list
+    average_training_loss = total_loss / len(train_loader)
+    print("The average training loss is {}".format(average_training_loss))
+    training_loss_values.append(average_training_loss)
+
+    # We have finished the training on one epoch, validation period
+
+    # switch the model to evaluation mode
+    model.eval()
+    # Set the loss and accuracy to 0
+    val_loss, val_accuracy, eval_steps, eval_examples = 0, 0, 0, 0
+    predict_tag, original_tag = [], []
+    for batch in val_loader:
+        batch_data = tuple(t.to(device) for t in batch)
+        b_text, b_mask, b_tag = batch_data
+        # don't calculate the gradient
+        with torch.no_grad():
+            # Forward pass and return the predicted tags
+            outputs = model(b_text, token_type_ids=None, attention_mask=b_mask, labels=b_tag)
+
+        # Move the predicted and readl tags to CPU
+        predict_outcome = outputs[1].detach().cpu().numpy()
+        real = b_tag.to('cpu').numpy()
+
+        # Calculate the loss and accuracy
+        val_loss += outputs[0].mean().item()
+        predict_tag.extend(list(predict) for predict in np.argmax(predict_outcome, axis=2))
+        original_tag.extend(real)
+
+    # Calculate the average loss
+    average_validation_loss = val_loss / len(val_loader)
+    validation_loss_values.append(average_validation_loss)
+    print("Average Validation Loss is: {}".format(average_validation_loss))
+
+    pred_tags = [index_to_tag_dict[predicted_index] for predicted, origin in zip(predict_tag, original_tag) for
+                 predicted_index, origin_index in zip(predicted, origin) if index_to_tag_dict[origin_index] != "PAD"]
+    non_pad_tags = [index_to_tag_dict[origin_index] for origin in original_tag for origin_index in origin if
+                    index_to_tag_dict[origin_index] != "PAD"]
+    print("Validation Accuracy: {}".format(accuracy_score(pred_tags, non_pad_tags)))
+    print("Validation F1-Score: {}\n".format(f1_score(pred_tags, non_pad_tags)))
+
+    # Save our trained model
+    if not os.path.exists("./models/"):
+        os.mkdir("./models/")
+    torch.save(model, "./models/model.pkl")
+
+    # Do some visualization, set the style and the font size, figure size
+    sns.set_style(style="darkgrid")
+    sns.set(font_scale=1.5)
+    plt.rcParams["figure.figsize"] = (30, 15)
+
+    # Plot the learning curve
+    plt.plot(training_loss_values, 'b-o', label="Training Loss Curve")
+    plt.plot(validation_loss_values, 'r-o', label="Validation Loss Curve")
+
+    # Label the plot
+    plt.title("Learning Curve")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.show()
