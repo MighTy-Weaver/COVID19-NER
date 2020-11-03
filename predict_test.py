@@ -10,7 +10,12 @@ from pandas import DataFrame
 from tqdm import trange
 from transformers import BertTokenizer
 
-from BERT_finetuning import train_dict
+# load the training dict and build the tag <--> index dictionary and add PAD tag into it
+train_dict = pickle.load(open("./data/train.pkl", 'rb'))
+tag_list = list(set(chain(*train_dict["tag_seq"])))
+tag_list.append("PAD")
+tag_to_index_dict = {t: i for i, t in enumerate(tag_list)}
+index_to_tag_dict = {i: t for i, t in enumerate(tag_list)}
 
 # Build an arg_parser to retrieve the model path
 parser = argparse.ArgumentParser()
