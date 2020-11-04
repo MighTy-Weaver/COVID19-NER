@@ -3,9 +3,7 @@ import os
 import pickle
 from itertools import chain
 
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import torch
 from pytorch_pretrained_bert import BertTokenizer
 from seqeval.metrics import accuracy_score
@@ -189,7 +187,7 @@ scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_t
 print("Start Training.......")
 # Store the loss and with two list for each training and validation
 training_loss_values, validation_loss_values = [], []
-
+training_accuracy, validation_accuracy = [], []
 for ep in trange(epochs, desc="Epoch: {}"):
     model.train()
     total_loss = 0
@@ -218,11 +216,40 @@ for ep in trange(epochs, desc="Epoch: {}"):
     print("The average training loss is {}\n".format(average_training_loss))
     training_loss_values.append(average_training_loss)
 
-    # We have finished the training on one epoch, validation period
+    # We have finished the training on one epoch, time to enter evaluation period
 
     # switch the model to evaluation mode
     model.eval()
-    # Set the loss and accuracy to 0
+
+    # Predict on training set, set everything to 0 and empty
+    val_loss, val_accuracy, eval_steps, eval_examples = 0, 0, 0, 0
+    predict_tag, original_tag = [], []
+    for batch in train_loader:
+        batch_data = tuple(t.to(device) for t in batch)
+        b_text, b_mask, b_tag = batch_data
+        # don't calculate the gradient
+        with torch.no_grad():
+            # Forward pass and return the predicted tags
+            outputs = model(b_text, token_type_ids=None, attention_mask=b_mask, labels=b_tag)
+
+        # Move the predicted and real tags to CPU
+        predict_outcome = outputs[1].detach().cpu().numpy()
+        real = b_tag.to('cpu').numpy()
+
+        # Calculate the loss and accuracy
+        val_loss += outputs[0].mean().item()
+        predict_tag.extend(list(predict) for predict in np.argmax(predict_outcome, axis=2))
+        original_tag.extend(real)
+
+    # Calculate the accuracy on training set
+    pred_tags = [index_to_tag_dict[predicted_index] for predicted, origin in zip(predict_tag, original_tag) for
+                 predicted_index, origin_index in zip(predicted, origin) if index_to_tag_dict[origin_index] != "PAD"]
+    non_pad_tags = [index_to_tag_dict[origin_index] for origin in original_tag for origin_index in origin if
+                    index_to_tag_dict[origin_index] != "PAD"]
+    training_accuracy.append(accuracy_score(pred_tags, non_pad_tags))
+    print("Training Accuracy: {}\n".format(accuracy_score(pred_tags, non_pad_tags)))
+
+    # Evaluate on validation set, initially set the loss and accuracy to 0
     val_loss, val_accuracy, eval_steps, eval_examples = 0, 0, 0, 0
     predict_tag, original_tag = [], []
     for batch in val_loader:
@@ -247,10 +274,12 @@ for ep in trange(epochs, desc="Epoch: {}"):
     validation_loss_values.append(average_validation_loss)
     print("Average Validation Loss is: {}\n".format(average_validation_loss))
 
+    # Calculate the validation accuracy
     pred_tags = [index_to_tag_dict[predicted_index] for predicted, origin in zip(predict_tag, original_tag) for
                  predicted_index, origin_index in zip(predicted, origin) if index_to_tag_dict[origin_index] != "PAD"]
     non_pad_tags = [index_to_tag_dict[origin_index] for origin in original_tag for origin_index in origin if
                     index_to_tag_dict[origin_index] != "PAD"]
+    validation_accuracy.append(accuracy_score(pred_tags, non_pad_tags))
     print("Validation Accuracy: {}\n".format(accuracy_score(pred_tags, non_pad_tags)))
 
     # Save our trained model
@@ -259,26 +288,13 @@ for ep in trange(epochs, desc="Epoch: {}"):
     torch.save(model, "./models/model_e{}_bs{}_epoch{}.pkl".format(epochs, BS, ep))
 
 # Save the loss array as npy
-if not os.path.exists("./loss/"):
-    os.mkdir("./loss/")
+if not os.path.exists("./results/"):
+    os.mkdir("./results/")
 training_loss = np.array(training_loss_values)
 validation_loss = np.array(validation_loss_values)
-np.save("./loss/training_loss_e{}_BS{}.npy".format(epochs, BS), training_loss)
-np.save("./loss/validation_loss_e{}_BS{}.npy".format(epochs, BS), validation_loss)
-
-# Do some visualization, set the style and the font size, figure size
-sns.set_style(style="darkgrid")
-sns.set(font_scale=1.5)
-plt.rcParams["figure.figsize"] = (30, 15)
-
-# Plot the learning curve
-plt.plot(training_loss_values, 'b-o', label="Training Loss Curve")
-plt.plot(validation_loss_values, 'r-o', label="Validation Loss Curve")
-
-# Label the plot
-plt.title("Learning Curve")
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
-plt.legend()
-plt.savefig("./loss/loss_fig_e{}_BS{}.png".format(epochs, BS))
-# plt.show()
+training_acc = np.array(training_accuracy)
+validation_acc = np.array(validation_accuracy)
+np.save("./results/training_loss_e{}_BS{}.npy".format(epochs, BS), training_loss)
+np.save("./results/validation_loss_e{}_BS{}.npy".format(epochs, BS), validation_loss)
+np.save("./results/training_accuracy_e{}_BS{}.npy".format(epochs, BS), training_acc)
+np.save("./results/validation_accuracy_e{}_BS{}.npy".format(epochs, BS), validation_acc)
