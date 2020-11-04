@@ -17,12 +17,14 @@ from transformers import BertForTokenClassification, AdamW, get_linear_schedule_
 
 # Build and arg_parser to retrieve arguments
 parser = argparse.ArgumentParser()
+parser.add_argument("--GPU_number", type=int, default=0, required=False, help="The GPU index to use")
 parser.add_argument("--epoch", type=int, required=False, default=10,
                     help="The number of epochs to be train for the model")
 parser.add_argument("--gradnorm", type=float, required=False, default=1.0, help="maximum gradient normalization")
 parser.add_argument("--batch_size", type=int, required=False, default=2, help="The batch size during the training")
 args = parser.parse_args()
 BS = args.batch_size
+os.environ["CUDA_VISIBLE_DEVICES"] = "{}".format(args.GPU_number)
 
 # Get the GPU as torch device
 if torch.cuda.is_available():
@@ -260,8 +262,8 @@ if not os.path.exists("./loss/"):
     os.mkdir("./loss/")
 training_loss = np.array(training_loss_values)
 validation_loss = np.array(validation_loss_values)
-np.save('./loss/training_loss.npy', training_loss)
-np.save('./loss/validation_loss.npy', validation_loss)
+np.save("./loss/training_loss_e{}_BS{}.npy".format(epochs, BS), training_loss)
+np.save("./loss/validation_loss_e{}_BS{}.npy".format(epochs, BS), validation_loss)
 
 # Do some visualization, set the style and the font size, figure size
 sns.set_style(style="darkgrid")
@@ -277,5 +279,5 @@ plt.title("Learning Curve")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
-plt.savefig('./loss/loss_fig.png')
+plt.savefig("./loss/loss_fig_e{}_BS{}.png".format(epochs, BS))
 # plt.show()

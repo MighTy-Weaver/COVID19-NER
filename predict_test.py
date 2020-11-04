@@ -44,17 +44,22 @@ for i in trange(len(test_data['word_seq'])):
     # Tokenize the sentence and push the encoded text to GPU
     sentence = ' '.join(test_data['word_seq'][i])
     tokenized_list = tokenizer.encode(sentence)
-    input_text = torch.tensor([tokenized_list]).cuda()
 
-    # Get the output of the prediction, push it to CPU
-    with torch.no_grad():
-        output = model(input_text)
-    tag_predicted = np.argmax(output[0].to('cpu').numpy(), axis=2)
-    decoded_tokens = tokenizer.convert_ids_to_tokens(input_text.to('cpu').numpy()[0])
+    if len(tokenized_list) < 512:
+        # push the text into GPU, get the output of the prediction, push it to CPU
+        input_text = torch.tensor([tokenized_list]).cuda()
+        with torch.no_grad():
+            output = model(input_text)
+        tag_predicted = np.argmax(output[0].to('cpu').numpy(), axis=2)[0]
+        decoded_tokens = tokenizer.convert_ids_to_tokens(input_text.to('cpu').numpy()[0])
+    else:
+        ind=300
+        while True:
+            pass
 
     # Merge the divided tokens and tags together
     rebuilt_tokens, rebuilt_tags = [], []
-    for token, tag in zip(decoded_tokens, tag_predicted[0]):
+    for token, tag in zip(decoded_tokens, tag_predicted):
         if token.startswith("##"):
             rebuilt_tokens[-1] = rebuilt_tokens[-1] + token[2:]
         else:
