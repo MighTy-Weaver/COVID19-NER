@@ -25,6 +25,7 @@ parser.add_argument("--batch_size", type=int, required=False, default=2, help="T
 args = parser.parse_args()
 BS = args.batch_size
 os.environ["CUDA_VISIBLE_DEVICES"] = "{}".format(args.GPU_number)
+torch.cuda.set_device(args.GPU_number)
 
 # Get the GPU as torch device
 if torch.cuda.is_available():
