@@ -21,7 +21,13 @@ parser.add_argument("--epoch", type=int, required=False, default=10,
 parser.add_argument("--gradnorm", type=float, required=False, default=1.0, help="maximum gradient normalization")
 parser.add_argument("--batch_size", type=int, required=False, default=2, help="The batch size during the training")
 args = parser.parse_args()
+
+# Read the arguments
 BS = args.batch_size
+epochs = args.epoch
+max_grad_norm = args.gradnorm
+
+# Set the GPU to use
 os.environ["CUDA_VISIBLE_DEVICES"] = "{}".format(args.GPU_number)
 torch.cuda.set_device(args.GPU_number)
 
@@ -47,6 +53,10 @@ tag_list = list(set(chain(*train_dict["tag_seq"])))
 tag_list.append("PAD")
 tag_to_index_dict = {t: i for i, t in enumerate(tag_list)}
 index_to_tag_dict = {i: t for i, t in enumerate(tag_list)}
+
+# save out dictionary for generation
+np.save("./models/model_tag2id_e{}_bs{}.npy".format(epochs, BS), tag_to_index_dict)
+np.save("./models/model_id2tag_e{}_bs{}.npy".format(epochs, BS), index_to_tag_dict)
 
 
 # The function to tokenize the words and extend the tags of a word to each sub word
