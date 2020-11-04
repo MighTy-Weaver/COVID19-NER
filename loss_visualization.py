@@ -11,9 +11,9 @@ for filename in loss_list:
     if ".png" in filename:
         os.remove("./results/{}".format(filename))
     elif "training" in filename and "loss" in filename:
-        training_loss = np.load("./loss/{}".format(filename), allow_pickle=True)
+        training_loss = np.load("./results/{}".format(filename), allow_pickle=True)
         validation_file = filename.replace("training", "validation")
-        validation_loss = np.load("./loss/{}".format(validation_file), allow_pickle=True)
+        validation_loss = np.load("./results/{}".format(validation_file), allow_pickle=True)
         parameters = filename.replace("training_loss_", "").replace(".npy", "")
         # Do some visualization, set the style and the font size, figure size
         sns.set_style(style="darkgrid")
@@ -31,10 +31,11 @@ for filename in loss_list:
         plt.ylabel("Loss")
         plt.legend()
         plt.savefig("./results/loss_fig_{}.png".format(parameters))
+        plt.clf()
     elif "training" in filename and "accuracy" in filename:
-        training_accuracy = np.load("./loss/{}".format(filename), allow_pickle=True)
+        training_accuracy = np.load("./results/{}".format(filename), allow_pickle=True)
         validation_file = filename.replace("training", "validation")
-        validation_accuracy = np.load("./loss/{}".format(validation_file), allow_pickle=True)
+        validation_accuracy = np.load("./results/{}".format(validation_file), allow_pickle=True)
         parameters = filename.replace("training_accuracy_", "").replace(".npy", "")
         # Do some visualization, set the style and the font size, figure size
         sns.set_style(style="darkgrid")
@@ -52,3 +53,4 @@ for filename in loss_list:
         plt.ylabel("Accuracy")
         plt.legend()
         plt.savefig("./results/accuracy_fig_{}.png".format(parameters))
+        plt.clf()
