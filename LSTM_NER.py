@@ -3,6 +3,7 @@ import json
 import pickle
 from itertools import chain
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas
@@ -115,7 +116,10 @@ def train_model(X, y, val_X, val_y, model):
 
 # build our model and print the summary
 model_bi_lstm_lstm = get_bi_lstm_model()
-plot_model(model_bi_lstm_lstm, show_shapes=True)
+try:
+    plot_model(model_bi_lstm_lstm, show_shapes=True)
+except ImportError:
+    pass
 
 # Use the dict we've prepared before to do the embedding and transformation
 train_input = np.array(
@@ -137,6 +141,7 @@ print(train_output.shape, val_output.shape)
 history = train_model(train_input, train_output, val_input, val_output, model_bi_lstm_lstm)
 
 # Do some visualization
+mpl.use('Agg')
 plt.plot(history.history['accuracy'])
 plt.plot(history.history['val_accuracy'])
 plt.title('model accuracy')
@@ -156,7 +161,7 @@ plt.legend(['train', 'validation'], loc='upper left')
 plt.savefig('./lstm_results/model_loss.png')
 
 # Save the validation accuracy for us to find the best model trained
-np.save('./lstm_results/model_results_val_BS{}E{}LR{}'.format(BS, epochs, LR), history.history['val_acc'])
+np.save('./lstm_results/model_results_val_BS{}E{}LR{}.npy'.format(BS, epochs, LR), history.history['val_accuracy'])
 
 # Save our trained model and open up a answer csv, initialize all the id
 model_bi_lstm_lstm.save('./lstm_model/model_BS{}E{}LR{}'.format(BS, epochs, LR))
