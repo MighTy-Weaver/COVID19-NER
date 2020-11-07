@@ -5,4 +5,4 @@ I implemented two approaches to solve the problem.
 
 ## 1. BERT Classfication 
 
-## 2. Glove Embedding + Bi-LSTM 
+## 2. Glove + Bi-LSTM 
