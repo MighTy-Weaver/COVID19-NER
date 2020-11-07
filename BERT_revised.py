@@ -57,13 +57,15 @@ np.save("./models/model_tag2id_e{}_bs{}.npy".format(epochs, BS), tag_to_index_di
 np.save("./models/model_id2tag_e{}_bs{}.npy".format(epochs, BS), index_to_tag_dict)
 
 # Use encode to encode all the texts and tags, and mask out the zero text value (which should not exist)
-train_text_id_list_padded = [tokenizer.encode(train_dict['word_seq'][i])[1:-1] for i in range(len(train_dict['word_seq']))]
+train_text_id_list_padded = [tokenizer.encode(train_dict['word_seq'][i])[1:-1] for i in
+                             range(len(train_dict['word_seq']))]
 train_tags_id_list_padded = [[tag_to_index_dict[tag] for tag in train_dict['tag_seq'][i]] for i in
                              range(len(train_dict['word_seq']))]
 val_text_id_list_padded = [tokenizer.encode(val_dict['word_seq'][i])[1:-1] for i in range(len(val_dict['word_seq']))]
 val_tags_id_list_padded = [[tag_to_index_dict[tag] for tag in val_dict['tag_seq'][i]] for i in
-                             range(len(val_dict['word_seq']))]
-train_attention_mask=[[float(value != 0.0) for value in sentence_tokens] for sentence_tokens in train_text_id_list_padded]
+                           range(len(val_dict['word_seq']))]
+train_attention_mask = [[float(value != 0.0) for value in sentence_tokens] for sentence_tokens in
+                        train_text_id_list_padded]
 val_attention_mask = [[float(value != 0.0) for value in sentence_tokens] for sentence_tokens in val_text_id_list_padded]
 
 # We are all set, transform everything into torch tensor.
@@ -96,7 +98,7 @@ no_decay = ['bias', 'gamma', 'beta']
 optimizer_grouped_parameters = [
     {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay_rate': 0.01},
     {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay_rate': 0.0}]
-optimizer = AdamW(optimizer_grouped_parameters, lr=2e-5, eps=1e-8)
+optimizer = AdamW(optimizer_grouped_parameters, lr=4e-5, eps=1e-8)
 
 # Set the training epochs and grad_norm, calculate the total steps of training
 epochs = args.epoch
@@ -113,7 +115,7 @@ print("Start Training.......")
 # Store the loss and with two list for each training and validation
 training_loss_values, validation_loss_values = [], []
 training_accuracy, validation_accuracy = [], []
-for ep in trange(epochs, desc="Epoch: {}"):
+for ep in trange(epochs, desc="Epoch: "):
     model.train()
     total_loss = 0
     for step, batch in enumerate(tqdm(train_loader)):

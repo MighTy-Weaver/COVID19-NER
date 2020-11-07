@@ -39,8 +39,8 @@ for filename in loss_list:
         parameters = filename.replace("training_accuracy_", "").replace(".npy", "")
         # Do some visualization, set the style and the font size, figure size
         sns.set_style(style="darkgrid")
-        sns.set(font_scale=1.5)
-        plt.rcParams["figure.figsize"] = (20, 10)
+        sns.set(font_scale=1)
+        plt.rcParams["figure.figsize"] = (30, 15)
 
         # Plot the learning curve
         plt.plot(training_accuracy, 'b-o', label="Training Accuracy Curve")
