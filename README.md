@@ -3,6 +3,6 @@ This is the code for the Group Project of course **Machine Learning for Natural 
 
 I implemented two approaches to solve the problem.
 
-## 1. BERT Approach
+## 1. BERT
 
-## 2. Bi-LSTM Approach
+## 2. Bi-LSTM
