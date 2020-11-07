@@ -92,11 +92,9 @@ print(embedding_dim, num_words, input_length, n_tags)
 # Set our model
 def get_bi_lstm_model():
     model = Sequential()
-    model.add(Embedding(num_words,
-                        embedding_dim,
-                        embeddings_initializer=Constant(encoded_matrix),
-                        input_length=input_length,
-                        trainable=True))
+    model.add(
+        Embedding(num_words, embedding_dim, embeddings_initializer=Constant(encoded_matrix), input_length=input_length,
+                  trainable=True))
     model.add(SpatialDropout1D(0.2))
     model.add(BatchNormalization())
     adam = Adam(lr=LR, beta_1=0.9, beta_2=0.999)
