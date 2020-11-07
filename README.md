@@ -3,7 +3,7 @@ This is the code for the Group Project of course **Machine Learning for Natural 
 
 I implemented two approaches to solve the problem.
 
-    Dataset are provided in the data folder
+    Dataset are provided in the data folder for reproduction.
 
 ## 1. BERT Classfication 
 By fine-tuning the pretrained BERT model from `HuggingFace`, I embedded all the words and
