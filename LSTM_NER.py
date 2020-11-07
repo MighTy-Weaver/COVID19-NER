@@ -1,7 +1,11 @@
+import argparse
+import json
 import pickle
 from itertools import chain
 
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Bidirectional, Embedding, Dropout, SpatialDropout1D, Dense, LSTM, \
     BatchNormalization
@@ -9,11 +13,18 @@ from tensorflow.python.keras.optimizer_v2.adam import Adam
 from tensorflow.python.keras.utils.vis_utils import plot_model
 from tensorflow.python.ops.init_ops import Constant
 from tqdm import trange, tqdm
-import matplotlib.pyplot as plt
+
+# Set up a argument parser
+parser = argparse.ArgumentParser()
+parser.add_argument("--epoch", type=int, default=100, required=False)
+parser.add_argument("--bs", type=int, default=256, required=False)
+parser.add_argument("--lr", type=float, default=0.001, required=False)
+args = parser.parse_args()
 
 # Set up some parameter we can use
-epochs = 100
-BS = 32
+epochs = args.epoch
+BS = args.bs
+LR = args.lr
 glove_dimension = 100
 
 # Load the data for three splits
@@ -87,7 +98,7 @@ def get_bi_lstm_model():
                         trainable=True))
     model.add(SpatialDropout1D(0.2))
     model.add(BatchNormalization())
-    adam = Adam(lr=0.0015, beta_1=0.9, beta_2=0.999)
+    adam = Adam(lr=LR, beta_1=0.9, beta_2=0.999)
     model.add(Bidirectional(LSTM(64, return_sequences=True)))
     model.add(Dropout(0.2))
     model.add(Dense(units=n_tags, activation='softmax'))
@@ -98,12 +109,13 @@ def get_bi_lstm_model():
 
 # Define the function to train our model
 def train_model(X, y, val_X, val_y, model):
-    hist = model.fit(X, y, batch_size=32, verbose=1, epochs=epochs, validation_data=(val_X, val_y), shuffle=True)
+    hist = model.fit(X, y, batch_size=BS, verbose=1, epochs=epochs, validation_data=(val_X, val_y), shuffle=True)
     return hist
 
+
 # build our model and print the summary
-model_bilstm_lstm = get_bi_lstm_model()
-plot_model(model_bilstm_lstm, show_shapes=True)
+model_bi_lstm_lstm = get_bi_lstm_model()
+plot_model(model_bi_lstm_lstm, show_shapes=True)
 
 # Use the dict we've prepared before to do the embedding and transformation
 train_input = np.array(
@@ -122,22 +134,41 @@ print(train_input.shape, val_input.shape, test_input.shape)
 print(train_output.shape, val_output.shape)
 
 # Train our model and save the loss recording
-history = train_model(train_input, train_output, val_input, val_output, model_bilstm_lstm)
+history = train_model(train_input, train_output, val_input, val_output, model_bi_lstm_lstm)
 
 # Do some visualization
-plt.plot(history.history['acc'])
-plt.plot(history.history['val_acc'])
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
-plt.show()
-
+# plt.show()
+plt.savefig('./lstm_results/accuracy.png')
+plt.clf()
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
 plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
-plt.show()
+# plt.show()
+plt.savefig('./lstm_results/model_loss.png')
 
+# Save the validation accuracy for us to find the best model trained
+np.save('./lstm_results/model_results_val_BS{}E{}LR{}'.format(BS, epochs, LR), history.history['val_acc'])
+
+# Save our trained model and open up a answer csv, initialize all the id
+model_bi_lstm_lstm.save('./lstm_model/model_BS{}E{}LR{}'.format(BS, epochs, LR))
+answer = pandas.DataFrame(columns=['id', 'labels'])
+answer['id'] = test_dict['id']
+
+# Predict on the test dict and save it to answer csv file
+predict = model_bi_lstm_lstm.predict(test_input)
+for i in range(len(answer)):
+    sentence_tag = []
+    for j in range(128):
+        tag = index_to_tag_dict[np.argmax(predict[i][j])]
+        sentence_tag.append(tag)
+    answer.loc[i, 'labels'] = json.dumps(sentence_tag)
+answer.to_csv('./lstm_results/answer_BS{}E{}LR{}'.format(BS, epochs, LR), index=True)
