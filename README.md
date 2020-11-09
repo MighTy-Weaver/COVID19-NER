@@ -13,7 +13,7 @@ The models are saved at the `./models/` and the results are saved at `./results/
 
 **The best results achieved is 89.3% on the validation set.** This is probably because there are some domain knowledge and BERT can't treat them well.
 
-Codes related are provided below:
+Codes related are provided below, to reproduce, please follow this sequence:
 
 `BERT_finetuning.py` : code for fine-tuning the BERT model with the old version of `BertTokenizer`, which `tokenize` and `convert_token_to_id` is used, followed by classification.
 
