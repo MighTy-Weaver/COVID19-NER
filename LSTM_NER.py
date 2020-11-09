@@ -147,7 +147,7 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
 # plt.show()
-plt.savefig('./lstm_results/accuracy.png')
+plt.savefig('./lstm_results/accuracy_BS{}E{}LR{}.png'.format(BS, epochs, LR))
 plt.clf()
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
@@ -156,7 +156,7 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
 # plt.show()
-plt.savefig('./lstm_results/model_loss.png')
+plt.savefig('./lstm_results/model_loss_BS{}E{}LR{}.png'.format(BS, epochs, LR))
 
 # Save the validation accuracy for us to find the best model trained
 np.save('./lstm_results/model_results_val_BS{}E{}LR{}.npy'.format(BS, epochs, LR), history.history['val_accuracy'])
@@ -174,4 +174,4 @@ for i in range(len(answer)):
         tag = index_to_tag_dict[np.argmax(predict[i][j])]
         sentence_tag.append(tag)
     answer.loc[i, 'labels'] = json.dumps(sentence_tag)
-answer.to_csv('./lstm_results/answer_BS{}E{}LR{}'.format(BS, epochs, LR), index=True)
+answer.to_csv('./lstm_results/answer_BS{}E{}LR{}.csv'.format(BS, epochs, LR), index=True)
