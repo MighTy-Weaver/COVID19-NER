@@ -7,7 +7,7 @@ I implemented two approaches to solve the problem.
 
 ## 1. BERT Classfication 
 By fine-tuning the pretrained BERT model from `HuggingFace`, I embedded all the words and
-use the provided BERT classification model to do the named entity recognition on the test set.
+use the provided BERT classification model to do the named entity recognition on the test set. Details can be found at: https://huggingface.co/transformers/model_doc/bert.html
 
 The models are saved at the `./models/` and the results are saved at `./results/`
 
