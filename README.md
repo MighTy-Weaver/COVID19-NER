@@ -46,4 +46,4 @@ Codes related are:
 
 `BiLSTM.ipynb` : A jupyter notebook of coding during the developing process. All codes are compiled together in the `LSTM_NER.py` with code-readability enhanced.
 
-'find_best_lstm.py' : The code to find the best lstm model trained with highest accuracy on the validation set, it will print the name of the best model and its hyperparameters.
+`find_best_lstm.py` : The code to find the best lstm model trained with highest accuracy on the validation set, it will print the name of the best model and its hyperparameters.
