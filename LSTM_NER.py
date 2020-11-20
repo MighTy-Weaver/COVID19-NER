@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import pickle
 from itertools import chain
 
@@ -18,15 +19,25 @@ from tqdm import trange, tqdm
 # Set up a argument parser
 parser = argparse.ArgumentParser()
 parser.add_argument("--epoch", type=int, default=100, required=False)
-parser.add_argument("--bs", type=int, default=256, required=False)
+parser.add_argument("--bs", type=int, default=64, required=False)
 parser.add_argument("--lr", type=float, default=0.001, required=False)
+parser.add_argument("--glove_size", type=int, choices=[6, 42, 840], default=6, required=False,
+                    help="the number of how many billion words does the glove model pretrained on")
 args = parser.parse_args()
 
+# Check the existence of Glove
+if not os.path.exists('./glove'):
+    print("Downloading Glove")
+    print("Downloading finished! Glove ready" if os.system('./get_glove.sh') == 0 else "Shell execution failed.")
+
 # Set up some parameter we can use
+glove_path_dict = {6: './glove/glove.6B.100d.txt', 42: './glove/glove.42B.300d.txt', 840: './glove/glove.840B.300d.txt'}
+glove_dimension_dict = {6: 100, 42: 300, 840: 300}
 epochs = args.epoch
 BS = args.bs
 LR = args.lr
-glove_dimension = 100
+glove_path = glove_path_dict[args.glove_size]
+glove_dimension = glove_dimension_dict[args.glove_size]
 
 # Load the data for three splits
 train_dict = pickle.load(open("./data/train.pkl", 'rb'))
@@ -35,7 +46,7 @@ test_dict = pickle.load(open("./data/test.pkl", 'rb'))
 
 # Read the glove embedding from the txt and save it into a dict
 glove_dict = {}
-with open('./glove.6B.100d.txt', 'r', encoding="utf-8") as f:
+with open(glove_path, 'r', encoding="utf-8") as f:
     for line in tqdm(f):
         values = line.split(' ')
         word = values[0]
@@ -61,7 +72,7 @@ for i in [train_dict, val_dict, test_dict]:
 print("words not found {}".format(count))
 print("words total {}".format(total))
 print(len(encoded_dict))
-np.save("./glove/encoded_dict.npy", encoded_dict)
+np.save("./glove/encoded_dict_{}B_{}d.npy".format(args.glove_size, glove_dimension), encoded_dict)
 
 # Build a dict that records the word to a single unique integer, and our encoded matrix for word embedding
 encoded_word2id = {}
@@ -70,7 +81,7 @@ for i, word in enumerate(encoded_dict.keys()):
     encoded_word2id[word] = i
     encoded_matrix[i] = encoded_dict[word]
 print(encoded_matrix.shape)
-np.save("./glove/encoded_matrix.npy", encoded_matrix)
+np.save("./glove/encoded_matrix_{}B_{}d.npy".format(args.glove_size, glove_dimension), encoded_matrix)
 
 # Build the tag <--> index dictionary and add PAD tag into it
 tag_list = list(set(chain(*train_dict["tag_seq"])))
@@ -147,7 +158,7 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
 # plt.show()
-plt.savefig('./lstm_results/accuracy_BS{}E{}LR{}.png'.format(BS, epochs, LR))
+plt.savefig('./lstm_results/accuracy_BS{}E{}LR{}_{}B_{}d.png'.format(BS, epochs, LR, args.glove_size, glove_dimension))
 plt.clf()
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
@@ -156,13 +167,17 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
 # plt.show()
-plt.savefig('./lstm_results/model_loss_BS{}E{}LR{}.png'.format(BS, epochs, LR))
+plt.savefig(
+    './lstm_results/model_loss_BS{}E{}LR{}_{}B_{}d.png'.format(BS, epochs, LR, args.glove_size, glove_dimension))
 
 # Save the validation accuracy for us to find the best model trained
-np.save('./lstm_results/model_results_val_BS{}E{}LR{}.npy'.format(BS, epochs, LR), history.history['val_accuracy'])
+np.save(
+    './lstm_results/model_results_val_BS{}E{}LR{}_{}B_{}d.npy'.format(BS, epochs, LR, args.glove_size, glove_dimension),
+    history.history['val_accuracy'])
 
 # Save our trained model and open up a answer csv, initialize all the id
-model_bi_lstm_lstm.save('./lstm_model/model_BS{}E{}LR{}'.format(BS, epochs, LR))
+model_bi_lstm_lstm.save(
+    './lstm_model/model_BS{}E{}LR{}_{}B_{}d.pkl'.format(BS, epochs, LR, args.glove_size, glove_dimension))
 answer = pandas.DataFrame(columns=['id', 'labels'])
 answer['id'] = test_dict['id']
 
@@ -174,4 +189,5 @@ for i in range(len(answer)):
         tag = index_to_tag_dict[np.argmax(predict[i][j])]
         sentence_tag.append(tag)
     answer.loc[i, 'labels'] = json.dumps(sentence_tag)
-answer.to_csv('./lstm_results/answer_BS{}E{}LR{}.csv'.format(BS, epochs, LR), index=True)
+answer.to_csv('./lstm_results/answer_BS{}E{}LR{}_{}B_{}d.csv'.format(BS, epochs, LR, args.glove_size, glove_dimension),
+              index=True)
