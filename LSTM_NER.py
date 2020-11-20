@@ -187,7 +187,7 @@ history = train_model(train_input, train_output, val_input, val_output, model_bi
 # Do some visualization
 sns.set_style(style="darkgrid")
 sns.set(font_scale=1.5)
-plt.rcParams["figure.figsize"] = (20, 10)
+plt.rcParams["figure.figsize"] = (30, 15)
 
 mpl.use('Agg')
 plt.plot(history.history['accuracy'])
