@@ -27,7 +27,8 @@ args = parser.parse_args()
 
 # Check the existence of Glove
 if not os.path.exists('./glove'):
-    print("Downloading Glove")
+    os.makedirs('./glove')
+    print("Downloading Glove\n\n\n")
     print("Downloading finished! Glove ready" if os.system('./get_glove.sh') == 0 else "Shell execution failed.")
 
 # Set up some parameter we can use
