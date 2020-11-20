@@ -2,18 +2,21 @@ import argparse
 import json
 import os
 import pickle
+import zipfile
 from itertools import chain
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas
+import seaborn as sns
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Bidirectional, Embedding, Dropout, SpatialDropout1D, Dense, LSTM, \
     BatchNormalization
 from tensorflow.python.keras.optimizer_v2.adam import Adam
 from tensorflow.python.keras.utils.vis_utils import plot_model
 from tensorflow.python.ops.init_ops import Constant
+from torchnlp.download import requests
 from tqdm import trange, tqdm
 
 # Set up a argument parser
@@ -25,11 +28,38 @@ parser.add_argument("--glove_size", type=int, choices=[6, 42, 840], default=6, r
                     help="the number of how many billion words does the glove model pretrained on")
 args = parser.parse_args()
 
-# Check the existence of Glove
+# Check the existence of Glove and Download it
+glove_6B = 'http://downloads.cs.stanford.edu/nlp/data/glove.6B.zip'
+glove_42B = 'http://downloads.cs.stanford.edu/nlp/data/glove.42B.300d.zip'
+glove_840B = 'http://downloads.cs.stanford.edu/nlp/data/glove.840B.300d.zip'
 if not os.path.exists('./glove'):
     os.makedirs('./glove')
-    print("Downloading Glove\n\n\n")
-    print("Downloading finished! Glove ready" if os.system('./get_glove.sh') == 0 else "Shell execution failed.")
+if not os.path.isfile('./glove/glove.6B.zip'):
+    print("\nDownloading glove.6B, please wait.\n")
+    r_6b = requests.get(glove_6B, allow_redirects=True)
+    open('./glove/glove.6B.zip', 'wb').write(r_6b.content)
+    print("Downloading glove.6B Finished\n")
+    with zipfile.ZipFile('./glove/glove.6B.zip', 'r') as zip_ref:
+        zip_ref.extractall(path="./glove/")
+    print("Glove 6B extracted")
+
+if not os.path.isfile('./glove/glove.42B.300d.zip'):
+    print("\nDownloading glove.42B, please wait.\n")
+    r_42b = requests.get(glove_42B, allow_redirects=True)
+    open('./glove/glove.42B.300d.zip', 'wb').write(r_42b.content)
+    print("Downloading glove.42B Finished\n")
+    with zipfile.ZipFile('./glove/glove.42B.300d.zip', 'r') as zip_ref:
+        zip_ref.extractall(path="./glove/")
+    print("Glove 42B extracted")
+
+if not os.path.isfile('./glove/glove.840B.300d.zip'):
+    print("\nDownloading glove.840B, please wait.\n")
+    r_840b = requests.get(glove_840B, allow_redirects=True)
+    open('./glove/glove.840B.300d.zip', 'wb').write(r_840b.content)
+    print("Downloading glove.840B Finished\n")
+    with zipfile.ZipFile('./glove/glove.840B.300d.zip', 'r') as zip_ref:
+        zip_ref.extractall(path="./glove/")
+    print("Glove 840B extracted")
 
 # Set up some parameter we can use
 glove_path_dict = {6: './glove/glove.6B.100d.txt', 42: './glove/glove.42B.300d.txt', 840: './glove/glove.840B.300d.txt'}
@@ -77,7 +107,7 @@ np.save("./glove/encoded_dict_{}B_{}d.npy".format(args.glove_size, glove_dimensi
 
 # Build a dict that records the word to a single unique integer, and our encoded matrix for word embedding
 encoded_word2id = {}
-encoded_matrix = np.zeros((len(encoded_dict.keys()), 100), dtype=float)
+encoded_matrix = np.zeros((len(encoded_dict.keys()), glove_dimension), dtype=float)
 for i, word in enumerate(encoded_dict.keys()):
     encoded_word2id[word] = i
     encoded_matrix[i] = encoded_dict[word]
@@ -90,6 +120,10 @@ tag_to_index_dict = {t: i for i, t in enumerate(tag_list)}
 index_to_tag_dict = {i: t for i, t in enumerate(tag_list)}
 
 # save out dictionary for generation
+if not os.path.exists('./lstm_model'):
+    os.mkdir('./lstm_model/')
+if not os.path.exists('./lstm_results'):
+    os.mkdir('./lstm_results')
 np.save("./lstm_model/model_tag2id_e{}_bs{}.npy".format(epochs, BS), tag_to_index_dict)
 np.save("./lstm_model/model_id2tag_e{}_bs{}.npy".format(epochs, BS), index_to_tag_dict)
 
@@ -151,6 +185,10 @@ print(train_output.shape, val_output.shape)
 history = train_model(train_input, train_output, val_input, val_output, model_bi_lstm_lstm)
 
 # Do some visualization
+sns.set_style(style="darkgrid")
+sns.set(font_scale=1.5)
+plt.rcParams["figure.figsize"] = (30, 15)
+
 mpl.use('Agg')
 plt.plot(history.history['accuracy'])
 plt.plot(history.history['val_accuracy'])

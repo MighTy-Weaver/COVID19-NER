@@ -3,7 +3,7 @@ This is the code for the Group Project of course **Machine Learning for Natural 
 
 I implemented two approaches to solve the problem.
 
-    Dataset are provided in the data folder for reproduction.
+> Dataset are provided in the data folder for reproduction
 
 ## 1. BERT Classfication 
 By fine-tuning the pretrained BERT model from `HuggingFace`, I embedded all the words and
@@ -46,4 +46,9 @@ Codes related are:
 
 `BiLSTM.ipynb` : A jupyter notebook of coding during the developing process. All codes are compiled together in the `LSTM_NER.py` with code-readability enhanced.
 
-`find_best_lstm.py` : The code to find the best lstm model trained with highest accuracy on the validation set, it will print the name of the best model and its hyperparameters.
+### 3. Glove Update (2020/11/20) :
+---
+We've added the Glove downloading part into the LSTM_NER.py code and now the code can automatically download all the glove pretrained model.
+
+User can pass a parameter of how many billion words is the glove pretrained on to decide which glove model to use.
+
