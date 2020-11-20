@@ -1,5 +1,5 @@
 if [ ! -d "/glove" ]; then
-  mkdir /myfolder
+  mkdir /glove
 fi
 cd glove
 wget http://downloads.cs.stanford.edu/nlp/data/glove.6B.zip
