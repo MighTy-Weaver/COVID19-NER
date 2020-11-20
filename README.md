@@ -46,3 +46,7 @@ Codes related are:
 
 `BiLSTM.ipynb` : A jupyter notebook of coding during the developing process. All codes are compiled together in the `LSTM_NER.py` with code-readability enhanced.
 
+### 3. Glove Update (2020/11/20) :
+
+We've enabled downloading multiple Glove pretrained model and can pass the size of billion words trained by parameter, we'll be testing the performance
+on multiple Glove pretrained model to see which one works best for this task.
