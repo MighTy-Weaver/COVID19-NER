@@ -9,6 +9,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas
+import seaborn as sns
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Bidirectional, Embedding, Dropout, SpatialDropout1D, Dense, LSTM, \
     BatchNormalization
@@ -184,6 +185,10 @@ print(train_output.shape, val_output.shape)
 history = train_model(train_input, train_output, val_input, val_output, model_bi_lstm_lstm)
 
 # Do some visualization
+sns.set_style(style="darkgrid")
+sns.set(font_scale=1.5)
+plt.rcParams["figure.figsize"] = (20, 10)
+
 mpl.use('Agg')
 plt.plot(history.history['accuracy'])
 plt.plot(history.history['val_accuracy'])
