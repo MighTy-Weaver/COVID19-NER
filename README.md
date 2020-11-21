@@ -7,13 +7,13 @@ I implemented two approaches to solve the problem.
 
 ## 1. BERT Classfication 
 By fine-tuning the pretrained BERT model from `HuggingFace`, I embedded all the words and
-use the provided BERT classification model to do the named entity recognition on the test set.
+use the provided BERT classification model to do the named entity recognition on the test set. Details can be found at: https://huggingface.co/transformers/model_doc/bert.html
 
 The models are saved at the `./models/` and the results are saved at `./results/`
 
 **The best results achieved is 89.3% on the validation set.** This is probably because there are some domain knowledge and BERT can't treat them well.
 
-Codes related are provided below:
+Codes related are provided below, to reproduce, please follow this sequence:
 
 `BERT_finetuning.py` : code for fine-tuning the BERT model with the old version of `BertTokenizer`, which `tokenize` and `convert_token_to_id` is used, followed by classification.
 
@@ -51,3 +51,4 @@ Codes related are:
 We've added the Glove downloading part into the LSTM_NER.py code and now the code can automatically download all the glove pretrained model.
 
 User can pass a parameter of how many billion words is the glove pretrained on to decide which glove model to use.
+
