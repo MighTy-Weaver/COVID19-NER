@@ -148,12 +148,13 @@ def get_bi_lstm_model():
     model.add(SpatialDropout1D(0.2))
     model.add(BatchNormalization())
     if args.model == "lstm_bilstm":
-        model.add(LSTM(64, return_sequences=True))
+        model.add(LSTM(128, return_sequences=True))
     elif args.model == "bilstm_bilstm":
         for _ in range(args.layers):
             model.add(Bidirectional(LSTM(128, return_sequences=True)))
+            model.add(BatchNormalization())
+            model.add(Dropout(0.15))
     adam = Adam(lr=LR, beta_1=0.9, beta_2=0.999)
-    model.add(Dropout(0.2))
     model.add(Dense(units=n_tags, activation='softmax'))
     model.compile(loss='sparse_categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
     model.summary()
