@@ -21,11 +21,13 @@ from tqdm import trange, tqdm
 
 # Set up a argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument("--epoch", type=int, default=100, required=False)
+parser.add_argument("--epoch", type=int, default=300, required=False)
 parser.add_argument("--bs", type=int, default=64, required=False)
 parser.add_argument("--lr", type=float, default=0.001, required=False)
-parser.add_argument("--glove_size", type=int, choices=[6, 42, 840], default=6, required=False,
+parser.add_argument("--glove_size", type=int, choices=[6, 42, 840], default=840, required=False,
                     help="the number of how many billion words does the glove model pretrained on")
+parser.add_argument("--model", type=str, choices=["lstm_bilstm", "bilstm"], default="lstm_bilstm", required=False,
+                    help="The model to train the NER")
 args = parser.parse_args()
 
 # Check the existence of Glove and Download it
@@ -143,8 +145,10 @@ def get_bi_lstm_model():
                   trainable=True))
     model.add(SpatialDropout1D(0.2))
     model.add(BatchNormalization())
+    if args.model == "lstm_bilstm":
+        model.add(LSTM(64, return_sequences=True))
     adam = Adam(lr=LR, beta_1=0.9, beta_2=0.999)
-    model.add(Bidirectional(LSTM(64, return_sequences=True)))
+    model.add(Bidirectional(LSTM(128, return_sequences=True)))
     model.add(Dropout(0.2))
     model.add(Dense(units=n_tags, activation='softmax'))
     model.compile(loss='sparse_categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
