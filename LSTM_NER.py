@@ -26,8 +26,9 @@ parser.add_argument("--bs", type=int, default=64, required=False)
 parser.add_argument("--lr", type=float, default=0.001, required=False)
 parser.add_argument("--glove_size", type=int, choices=[6, 42, 840], default=840, required=False,
                     help="the number of how many billion words does the glove model pretrained on")
-parser.add_argument("--model", type=str, choices=["lstm_bilstm", "bilstm", "bilstm_bilstm"], default="lstm_bilstm",
+parser.add_argument("--model", type=str, choices=["lstm_bilstm", "bilstm", "bilstm_bilstm"], default="bilstm_bilstm",
                     required=False, help="The model to train the NER")
+parser.add_argument("--layers", type=int, default=2, required=False, help="The number of BiLSTM layers you want to try")
 args = parser.parse_args()
 print(args)
 
@@ -149,9 +150,9 @@ def get_bi_lstm_model():
     if args.model == "lstm_bilstm":
         model.add(LSTM(64, return_sequences=True))
     elif args.model == "bilstm_bilstm":
-        model.add(Bidirectional(LSTM(64, return_sequences=True)))
+        for _ in range(args.layers):
+            model.add(Bidirectional(LSTM(128, return_sequences=True)))
     adam = Adam(lr=LR, beta_1=0.9, beta_2=0.999)
-    model.add(Bidirectional(LSTM(128, return_sequences=True)))
     model.add(Dropout(0.2))
     model.add(Dense(units=n_tags, activation='softmax'))
     model.compile(loss='sparse_categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
@@ -193,7 +194,7 @@ history = train_model(train_input, train_output, val_input, val_output, model_bi
 
 # Do some visualization
 sns.set_style(style="darkgrid")
-sns.set(font_scale=1.5)
+sns.set(font_scale=1.75)
 plt.rcParams["figure.figsize"] = (30, 15)
 
 mpl.use('Agg')
@@ -204,7 +205,9 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
 # plt.show()
-plt.savefig('./lstm_results/accuracy_BS{}E{}LR{}_{}B_{}d.png'.format(BS, epochs, LR, args.glove_size, glove_dimension))
+plt.savefig(
+    './lstm_results/accuracy_BS{}E{}LR{}_{}B_{}d_{}layer.png'.format(BS, epochs, LR, args.glove_size, glove_dimension,
+                                                                     args.layers))
 plt.clf()
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
@@ -214,16 +217,19 @@ plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
 # plt.show()
 plt.savefig(
-    './lstm_results/model_loss_BS{}E{}LR{}_{}B_{}d.png'.format(BS, epochs, LR, args.glove_size, glove_dimension))
+    './lstm_results/model_loss_BS{}E{}LR{}_{}B_{}d_{}layers.png'.format(BS, epochs, LR, args.glove_size,
+                                                                        glove_dimension, args.layers))
 
 # Save the validation accuracy for us to find the best model trained
 np.save(
-    './lstm_results/model_results_val_BS{}E{}LR{}_{}B_{}d.npy'.format(BS, epochs, LR, args.glove_size, glove_dimension),
+    './lstm_results/model_results_val_BS{}E{}LR{}_{}B_{}d_{}layers.npy'.format(BS, epochs, LR, args.glove_size,
+                                                                               glove_dimension, args.layers),
     history.history['val_accuracy'])
 
 # Save our trained model and open up a answer csv, initialize all the id
 model_bi_lstm_lstm.save(
-    './lstm_model/model_BS{}E{}LR{}_{}B_{}d.pkl'.format(BS, epochs, LR, args.glove_size, glove_dimension))
+    './lstm_model/model_BS{}E{}LR{}_{}B_{}d_{}layers.pkl'.format(BS, epochs, LR, args.glove_size, glove_dimension,
+                                                                 args.layers))
 answer = pandas.DataFrame(columns=['id', 'labels'])
 answer['id'] = test_dict['id']
 
@@ -235,5 +241,6 @@ for i in range(len(answer)):
         tag = index_to_tag_dict[np.argmax(predict[i][j])]
         sentence_tag.append(tag)
     answer.loc[i, 'labels'] = json.dumps(sentence_tag)
-answer.to_csv('./lstm_results/answer_BS{}E{}LR{}_{}B_{}d.csv'.format(BS, epochs, LR, args.glove_size, glove_dimension),
-              index=True)
+answer.to_csv(
+    './lstm_results/answer_BS{}E{}LR{}_{}B_{}d_{}layers.csv'.format(BS, epochs, LR, args.glove_size, glove_dimension,
+                                                                    args.layers), index=True)
