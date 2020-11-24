@@ -29,7 +29,7 @@ parser.add_argument("--glove_size", type=int, choices=[6, 42, 840], default=840,
 parser.add_argument("--model", type=str, choices=["lstm_bilstm", "bilstm"], default="lstm_bilstm", required=False,
                     help="The model to train the NER")
 args = parser.parse_args()
-
+print(args)
 # Check the existence of Glove and Download it
 glove_6B = 'http://downloads.cs.stanford.edu/nlp/data/glove.6B.zip'
 glove_42B = 'http://downloads.cs.stanford.edu/nlp/data/glove.42B.300d.zip'
