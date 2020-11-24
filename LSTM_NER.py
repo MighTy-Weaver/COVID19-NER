@@ -26,10 +26,11 @@ parser.add_argument("--bs", type=int, default=64, required=False)
 parser.add_argument("--lr", type=float, default=0.001, required=False)
 parser.add_argument("--glove_size", type=int, choices=[6, 42, 840], default=840, required=False,
                     help="the number of how many billion words does the glove model pretrained on")
-parser.add_argument("--model", type=str, choices=["lstm_bilstm", "bilstm"], default="lstm_bilstm", required=False,
-                    help="The model to train the NER")
+parser.add_argument("--model", type=str, choices=["lstm_bilstm", "bilstm", "bilstm_bilstm"], default="lstm_bilstm",
+                    required=False, help="The model to train the NER")
 args = parser.parse_args()
 print(args)
+
 # Check the existence of Glove and Download it
 glove_6B = 'http://downloads.cs.stanford.edu/nlp/data/glove.6B.zip'
 glove_42B = 'http://downloads.cs.stanford.edu/nlp/data/glove.42B.300d.zip'
@@ -147,6 +148,8 @@ def get_bi_lstm_model():
     model.add(BatchNormalization())
     if args.model == "lstm_bilstm":
         model.add(LSTM(64, return_sequences=True))
+    elif args.model == "bilstm_bilstm":
+        model.add(Bidirectional(LSTM(64, return_sequences=True)))
     adam = Adam(lr=LR, beta_1=0.9, beta_2=0.999)
     model.add(Bidirectional(LSTM(128, return_sequences=True)))
     model.add(Dropout(0.2))
