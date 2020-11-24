@@ -46,6 +46,8 @@ Codes related are:
 
 `BiLSTM.ipynb` : A jupyter notebook of coding during the developing process. All codes are compiled together in the `LSTM_NER.py` with code-readability enhanced.
 
+`LSTM_find_best_model.py` : The code to find the best lstm model trained from all the models, it will read the generated accuracy list and find the one with the highest accuracy.
+
 ### 3. Glove Update (2020/11/20) :
 ---
 We've added the Glove downloading part into the LSTM_NER.py code and now the code can automatically download all the glove pretrained model.
@@ -58,4 +60,5 @@ User can pass a parameter of how many billion words is the glove pretrained on t
 We've experimented on two more model structures: BiLSTM + BiLSTM and LSTM + BiLSTM. User can pass a parameter called `model` to decide which 
 lstm structure to use.  
 
-We'll update with any preliminary result.
+With two layers of Bi-LSTM and basically trained on 40 epochs, we can get a accuracy of 93.05% on the validation set, which is quite high than the original single BiLSTM layer.
+
