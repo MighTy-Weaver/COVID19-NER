@@ -53,7 +53,7 @@ We've added the Glove downloading part into the LSTM_NER.py code and now the cod
 User can pass a parameter of how many billion words is the glove pretrained on to decide which glove model to use.
 
 
-### 4. LSTM - Bidirectional LSTM update (2020/11/24) :
+### 4. LSTM Structure update (2020/11/24) :
 ---
 We've experimented on two more model structures: BiLSTM + BiLSTM and LSTM + BiLSTM. User can pass a parameter called `model` to decide which 
 lstm structure to use.  
