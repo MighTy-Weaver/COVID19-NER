@@ -5,6 +5,12 @@ I implemented two approaches to solve the problem.
 
 > Dataset are provided in the data folder for reproduction
 
+## 0. Some non-functional codes:
+`test.py` : useless code for testing purpose.
+
+`evaluate.py` : Sample code provided for evaluating the output and results.
+
+
 ## 1. BERT Classfication 
 By fine-tuning the pretrained BERT model from `HuggingFace`, I embedded all the words and
 use the provided BERT classification model to do the named entity recognition on the test set. Details can be found at: https://huggingface.co/transformers/model_doc/bert.html
@@ -19,16 +25,11 @@ Codes related are provided below, to reproduce, please follow this sequence:
 
 `BERT_revised.py` : code for fine-tuning the BERT model with `transformer 3.4.0`, where`BertTokenizer.encode` is used, followed by a classification.
 
-`evaluate.py` : Sample code provided for evaluating the output and results.
+`BERT_find_best_model.py` : code for finding the best model according to the validation accuracy.
 
-`find_best_model.py` : code for finding the best model according to the validation accuracy.
+`BERT_loss_visualization.py` : visualizing the training/validation loss/accuracy for all the models.
 
-`loss_visualization.py` : visualizing the training/validation loss/accuracy for all the models.
-
-`predict_verify.py`: code for generating result on the test data and verify the result by checking the generation's length.
-
-`test.py` : useless code for testing and trail purpose.
-
+`BERT_predict_verify.py`: code for generating result on the test data and verify the result by checking the generation's length.
 
 ## 2. Glove + Bi-LSTM 
 
