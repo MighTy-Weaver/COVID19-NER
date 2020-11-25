@@ -5,11 +5,13 @@ import pickle
 import zipfile
 from itertools import chain
 
+import keras.backend.tensorflow_backend as KTF
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas
 import seaborn as sns
+import tensorflow as tf
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Bidirectional, Embedding, Dropout, SpatialDropout1D, Dense, LSTM, \
     BatchNormalization
@@ -21,6 +23,7 @@ from tqdm import trange, tqdm
 
 # Set up a argument parser
 parser = argparse.ArgumentParser()
+parser.add_argument("--gpu", type=int, default=0, required=False, help="The number of gpu you want to use")
 parser.add_argument("--epoch", type=int, default=300, required=False)
 parser.add_argument("--bs", type=int, default=64, required=False)
 parser.add_argument("--lr", type=float, default=0.001, required=False)
@@ -31,6 +34,15 @@ parser.add_argument("--model", type=str, choices=["lstm_bilstm", "bilstm", "bils
 parser.add_argument("--layers", type=int, default=2, required=False, help="The number of BiLSTM layers you want to try")
 args = parser.parse_args()
 print(args)
+
+# Set the GPU
+os.environ["CUDA_VISIBLE_DEVICES"] = "{}".format(args.gpu)
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.95
+config.gpu_options.allow_growth = True  # Comment out this line if you are not using RTX 2070 or 2080, if it still
+# doesn't work then uncomment this line
+sess = tf.compat.v1.Session(config=config)
+KTF.set_session(sess)
 
 # Check the existence of Glove and Download it
 glove_6B = 'http://downloads.cs.stanford.edu/nlp/data/glove.6B.zip'
@@ -153,7 +165,7 @@ def get_bi_lstm_model():
         for _ in range(args.layers):
             model.add(Bidirectional(LSTM(128, return_sequences=True)))
             model.add(BatchNormalization())
-            model.add(Dropout(0.15))
+            model.add(Dropout(0.3))
     adam = Adam(lr=LR, beta_1=0.9, beta_2=0.999)
     model.add(Dense(units=n_tags, activation='softmax'))
     model.compile(loss='sparse_categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
@@ -171,7 +183,7 @@ def train_model(X, y, val_X, val_y, model):
 model_bi_lstm_lstm = get_bi_lstm_model()
 try:
     plot_model(model_bi_lstm_lstm, show_shapes=True)
-except ImportError:
+except ImportError and Exception:
     pass
 
 # Use the dict we've prepared before to do the embedding and transformation
