@@ -61,5 +61,12 @@ User can pass a parameter of how many billion words is the glove pretrained on t
 We've experimented on two more model structures: BiLSTM + BiLSTM and LSTM + BiLSTM. User can pass a parameter called `model` to decide which 
 lstm structure to use.  
 
-With two layers of Bi-LSTM and basically trained on 40 epochs, we can get a accuracy of 93.25% on the validation set, which is quite high than the original single BiLSTM layer.
+With two layers of Bi-LSTM and basically trained on 40 epochs, we can get a accuracy of 93.05% on the validation set, which is quite high than the original single BiLSTM layer.
 
+### 5.  Word2vec model  introduced (2020/11/24) :
+
+---
+
+We introduced a new word2vec model for the embedding rather than Glove. We tried for two times, the first time we use the `word2vec-google-news-300` pretrained model for embedding, it is relatively old and haven't been updated for years but still shows a good results with final accuracy `0.9201`. 
+
+And we are also thinking about that maybe using our own database to train the model is better, since the sentences are all in the specific domain. So we next use the word2vec to train on the given dataset and use this as embedding. The final accuracy is `0.9253`, which is slightly better. 
