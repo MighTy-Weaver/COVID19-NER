@@ -61,5 +61,5 @@ User can pass a parameter of how many billion words is the glove pretrained on t
 We've experimented on two more model structures: BiLSTM + BiLSTM and LSTM + BiLSTM. User can pass a parameter called `model` to decide which 
 lstm structure to use.  
 
-With two layers of Bi-LSTM and basically trained on 40 epochs, we can get a accuracy of 93.05% on the validation set, which is quite high than the original single BiLSTM layer.
+With two layers of Bi-LSTM and basically trained on 40 epochs, we can get a accuracy of 93.25% on the validation set, which is quite high than the original single BiLSTM layer.
 
