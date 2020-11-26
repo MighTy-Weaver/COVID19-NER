@@ -37,7 +37,7 @@ Since BERT is not performing that excellent in this task, an alternative is the 
 I used the Glove embedding with 6 Billion tokens in 100 dimensions. Details can be found at: https://nlp.stanford.edu/projects/glove/
 Then I used the Bidirectional-LSTM model to do the classification as its capable of capturing some long-term information with the ability of fitting the neural network with nonlinearity.
 
-**The best result achieved is 93.2% on the validation set.** This is high enough for this course project.
+**The best result achieved is 92.1% on the validation set.** This is high enough for this course project.
 
 The models are saved at `./lstm_models/` and the results, answers as well as the loss recording are all saved at `./lstm_results/`
 
@@ -61,12 +61,10 @@ User can pass a parameter of how many billion words is the glove pretrained on t
 We've experimented on two more model structures: BiLSTM + BiLSTM and LSTM + BiLSTM. User can pass a parameter called `model` to decide which 
 lstm structure to use.  
 
-With two layers of Bi-LSTM and basically trained on 40 epochs, we can get a accuracy of 93.05% on the validation set, which is quite high than the original single BiLSTM layer.
+We experimented on double layers of Bidirectional LSTM and triple layers of BiLSTM, both networks converged at around 40 epochs, **the double layers BiLSTM achieved the highest accuracy of 93.25%**, which is our best record.
 
-### 5.  Word2vec model  introduced (2020/11/24) :
-
+### 5. Word2vec model introduced (2020/11/24) :
 ---
-
 We introduced a new word2vec model for the embedding rather than Glove. We tried for two times, the first time we use the `word2vec-google-news-300` pretrained model for embedding, it is relatively old and haven't been updated for years but still shows a good results with final accuracy `0.9201`. 
 
 And we are also thinking about that maybe using our own database to train the model is better, since the sentences are all in the specific domain. So we next use the word2vec to train on the given dataset and use this as embedding. The final accuracy is `0.9253`, which is slightly better. 

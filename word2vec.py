@@ -4,7 +4,6 @@ import argparse
 import json
 import os
 import pickle
-import zipfile
 from itertools import chain
 
 import matplotlib as mpl
@@ -12,14 +11,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas
 import seaborn as sns
+from gensim.models import Word2Vec
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Bidirectional, Embedding, Dropout, SpatialDropout1D, Dense, LSTM, \
     BatchNormalization
 from tensorflow.python.keras.optimizer_v2.adam import Adam
 from tensorflow.python.keras.utils.vis_utils import plot_model
 from tensorflow.python.ops.init_ops import Constant
-from gensim.models import Word2Vec
-from tqdm import trange, tqdm
+from tqdm import trange
 
 # Set up a argument parser
 parser = argparse.ArgumentParser()
@@ -171,7 +170,7 @@ plt.legend(['train', 'validation'], loc='upper left')
 # plt.show()
 plt.savefig(
     './lstm_results/accuracy_BS{}E{}LR{}_{}d_{}layer.png'.format(BS, epochs, LR, dimension,
-                                                                     args.layers))
+                                                                 args.layers))
 plt.clf()
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
@@ -182,12 +181,12 @@ plt.legend(['train', 'validation'], loc='upper left')
 # plt.show()
 plt.savefig(
     './lstm_results/model_loss_BS{}E{}LR{}_{}d_{}layers.png'.format(BS, epochs, LR,
-                                                                        dimension, args.layers))
+                                                                    dimension, args.layers))
 print("save images down.")
 # Save the validation accuracy for us to find the best model trained
 np.save(
     './lstm_results/model_results_val_BS{}E{}LR{}_{}d_{}layers.npy'.format(BS, epochs, LR,
-                                                                               dimension, args.layers),
+                                                                           dimension, args.layers),
     history.history['val_accuracy'])
 print("save history validation data down.")
 # Save our trained model and open up a answer csv, initialize all the id
@@ -210,5 +209,5 @@ for i in range(len(answer)):
     answer.loc[i, 'labels'] = json.dumps(sentence_tag)
 answer.to_csv(
     './lstm_results/answer_BS{}E{}LR{}_{}d_{}layers.csv'.format(BS, epochs, LR, dimension,
-                                                                    args.layers), index=True)
+                                                                args.layers), index=True)
 print("save results csv down.")
