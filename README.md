@@ -1,7 +1,8 @@
 # 2020-Fall COMP4901K-Project COVID-19 Named Entity Recognition 
 This is the code for the Group Project of course **Machine Learning for Natural Language Processing (COMP4901K) Fall-2020**
 
-I implemented two approaches to solve the problem.
+Basically speaking, BERT and BiLSTM are the two approaches to solve the task. The final result shows that Double Layer BiLSTM is 
+our best choice.
 
 > Dataset are provided in the data folder for reproduction
 
