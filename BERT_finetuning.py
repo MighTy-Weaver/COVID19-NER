@@ -1,3 +1,7 @@
+# This code is deprecated by BERT_revised.py
+# Please see that code for updated detail
+
+
 import argparse
 import os
 import pickle
