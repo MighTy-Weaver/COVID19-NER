@@ -25,8 +25,8 @@ The models are saved at the `./models/` and the results are saved at `./results/
 
 Codes related are provided below, to reproduce, please follow this sequence:
 
-**(This code is deprecated by `BERT_revised.py`)**
-`BERT_finetuning.py` : code for fine-tuning the BERT model with the old version of `BertTokenizer`, which `tokenize` and `convert_token_to_id` is used, followed by classification.
+
+`BERT_finetuning.py` **(This code is deprecated by `BERT_revised.py`)**: code for fine-tuning the BERT model with the old version of `BertTokenizer`, which `tokenize` and `convert_token_to_id` is used, followed by classification.
 
 `BERT_revised.py` : code for fine-tuning the BERT model with `transformer 3.4.0`, where`BertTokenizer.encode` is used, followed by a classification.
 
