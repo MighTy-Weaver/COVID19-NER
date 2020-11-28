@@ -5,6 +5,9 @@ I implemented two approaches to solve the problem.
 
 > Dataset are provided in the data folder for reproduction
 
+Use `pip install -r requirements.txt` to install the packages needed. We've tested this repository under Python 3.6 and
+CentOS 7.0
+
 ## 0. Some non-functional codes:
 `test.py` : useless code for testing purpose.
 
