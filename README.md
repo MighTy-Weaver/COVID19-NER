@@ -14,7 +14,7 @@ CentOS 7.0
 `evaluate.py` : Sample code provided for evaluating the output and results.
 
 
-## 1. BERT Classfication 
+## 1. BERT Classification 
 By fine-tuning the pretrained BERT model from `HuggingFace`, I embedded all the words and
 use the provided BERT classification model to do the named entity recognition on the test set. Details can be found at: https://huggingface.co/transformers/model_doc/bert.html
 
@@ -38,7 +38,7 @@ Codes related are provided below, to reproduce, please follow this sequence:
 
 Since BERT is not performing that excellent in this task, an alternative is the pretrained-word-embedding + LSTM
 I used the Glove embedding with 6 Billion tokens in 100 dimensions. Details can be found at: https://nlp.stanford.edu/projects/glove/
-Then I used the Bidirectional-LSTM model to do the classification as its capable of capturing some long-term information with the ability of fitting the neural network with nonlinearity.
+Then I used the Bidirectional-LSTM model to do the classification as its capable of capturing some long-term information with the ability of fitting the neural network with non-linearity.
 
 **The best result achieved is 92.1% on the validation set.** This is high enough for this course project.
 
