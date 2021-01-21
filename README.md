@@ -10,7 +10,6 @@ Use `pip install -r requirements.txt` to install the packages needed. We've test
 CentOS 7.0
 
 ## 0. Some non-functional codes:
-`test.py` : useless code for testing purpose.
 
 `evaluate.py` : Sample code provided for evaluating the output and results.
 
